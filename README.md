@@ -1,5 +1,8 @@
 # USBScale
-Java frontend for Beurer USB scales
+Java frontend for Beurer USB scales. It Can be adapted to other models, but I only have this scale.
+Still a work in progress.
+
+![Main window](https://github.com/dslul/USBScale/blob/master/screenshot.png)
 
 Needed: OpenJDK/jre version 8.
 Under Linux, install libusb. On Windows, you need these two:

@@ -1,5 +1,6 @@
 package org.dslul.usbscale;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -23,8 +24,9 @@ public class DBManager {
 	public DBManager() {
         try {
         	Class.forName("org.sqlite.JDBC");
-			conn = DriverManager.getConnection("jdbc:sqlite:data.db");
-		
+        	String dir = System.getProperty("user.home") + "/.usbscale/";
+        	new File(dir).mkdir();
+			conn = DriverManager.getConnection("jdbc:sqlite:"+ dir +"data.db");
 	        System.out.println("DB opened");
 	        //if table does not exist, create it
 	        DatabaseMetaData dbm = conn.getMetaData();

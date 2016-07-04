@@ -67,7 +67,7 @@ public class DBManager {
         "FOREIGN KEY (userId) REFERENCES UserData(`id`) ) WITHOUT ROWID;";
         
         String sql2 = "CREATE TABLE `UserData` (id INTEGER PRIMARY KEY NOT NULL, name TEXT, "+
-        		"birthDate TEXT, height INTEGER, gender INTEGER,"+
+        		"birthDate TEXT, height INTEGER, gender TEXT,"+
         		" activity INTEGER, lastDownload TEXT) WITHOUT ROWID;";
 
         stat.executeUpdate("drop table if exists UserMeasurement;");
@@ -96,7 +96,8 @@ public class DBManager {
 					System.out.println("Added user: " + user);
 					String sql = "INSERT INTO `UserData`(`id`,`name`,`birthDate`,"+
 							"`height`,`gender`,`activity`,`lastDownload`) VALUES "+
-							"("+user.getId()+",NULL,NULL,NULL,NULL,NULL,NULL);";
+							"("+user.getId()+","+user.getName()+","+user.getBirthDate()+","+
+							user.getHeight()+","+user.getGender().name()+","+user.getActivity()+",NULL);";
 					sta.executeUpdate(sql);
 				}
 				//add measurements
@@ -124,6 +125,13 @@ public class DBManager {
 			e.printStackTrace();
 		}
     }
+	
+	public void changeUserName(User user, String newName) throws SQLException {
+		Statement statement = conn.createStatement();
+		statement.executeUpdate("UPDATE `UserData` SET `name`='"+newName+
+    			"' WHERE `id`="+user.getId()+";");
+		statement.close();
+	}
 
 	public List<User> getSavedUsers() {
 		List<User> users = new ArrayList<>();
@@ -147,7 +155,9 @@ public class DBManager {
 	        	}
 	        	resultSet2.close();
 		        stat2.close();
-	        	User user = new User(userid, measurements);
+	        	User user = new User(userid, resultSet.getString("name"), resultSet.getString("birthDate"), 
+	        			resultSet.getInt("height"), resultSet.getString("gender"), 
+	        			resultSet.getInt("activity"), measurements);
 	        	users.add(user);
 			}
 		

@@ -9,17 +9,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.hansolo.medusa.Gauge;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -40,7 +44,7 @@ public class MainController {
 		colBodyfat.setCellValueFactory(new PropertyValueFactory<>("bodyfat"));
 		colMuscle.setCellValueFactory(new PropertyValueFactory<>("muscle"));
 		table.setItems(data);
-		
+
 		comboUsers.getSelectionModel().selectedIndexProperty().addListener(
 							(ov, oldval, val) -> {if((int)val!=-1) populateTable(val);});
 		progressbar.setProgress(0.0);
@@ -48,11 +52,23 @@ public class MainController {
 	}
 	
 	private void populateTable(Number newvalue) {
-		List<Measurement> measurements = users.get((int)newvalue).getMeasurements();
+		User user = users.get((int)newvalue);
+		txtName.setText(user.getName());
+		lblAge.setText(user.getAge());
+		lblHeight.setText(String.valueOf(user.getHeight()));
+		lblGender.setText(user.getGender()==User.Gender.MALE?"Maschile":"Femminile");
+		lblActivity.setText(String.valueOf(user.getActivity()));
+		
+		List<Measurement> measurements = user.getMeasurements();
 		data.clear();
 		for(Measurement mes : measurements) {
 			data.add(mes);
 		}
+		Measurement lastmes = user.getLastMeasurement();
+		gaugeWeight.setValue(lastmes.getWeight());
+		gaugeWater.setValue(lastmes.getWater());
+		gaugeBodyfat.setValue(lastmes.getBodyfat());
+		gaugeMuscle.setValue(lastmes.getMuscle());
 	}
 	
 	void retrieveUsersFromDB() {
@@ -63,6 +79,18 @@ public class MainController {
 		}
 		db.close();
 	}
+	
+
+	void populateChoicebox() {
+		ObservableList<String> userNames = FXCollections.observableArrayList();
+		for (User user : users) {
+			userNames.add(user.getName());
+		}
+		comboUsers.getItems().clear();
+		comboUsers.getItems().addAll(userNames);
+		comboUsers.getSelectionModel().selectFirst();
+	}
+	
 	
 	class DataThread implements Runnable {
 		public void run() {
@@ -89,15 +117,44 @@ public class MainController {
 		}
 	}
 
+	
+
+	
+	
 	/*-**************************
 	 * FXML EVENTS AND ELEMENTS *
 	 ****************************/
-	
+
 	@FXML
     private BorderPane mainPane;
+	@FXML
+    private GridPane gaugePane;
+
+	@FXML
+	private Gauge gaugeWeight;
+	@FXML
+	private Gauge gaugeWater;
+	@FXML
+	private Gauge gaugeBodyfat;
+	@FXML
+	private Gauge gaugeMuscle;
 
     @FXML
     private Button btnDownload;
+    @FXML
+    private Button btnSaveName;
+
+    @FXML
+    private Label lblHeight;
+    @FXML
+    private Label lblAge;
+    @FXML
+    private Label lblGender;
+    @FXML
+    private Label lblActivity;
+    
+    @FXML
+    private TextField txtName;
 
     @FXML
     private ChoiceBox<String> comboUsers;
@@ -126,16 +183,17 @@ public class MainController {
 		t.start();
 	}
 	
-	void populateChoicebox() {
-		ObservableList<String> userNames = FXCollections.observableArrayList();
-		for (User user : users) {
-			userNames.add(String.valueOf(user.getId()));
+	@FXML
+	void eventSaveName() {
+		if(comboUsers.getSelectionModel().getSelectedItem() != null) {
+			int index = comboUsers.getSelectionModel().getSelectedIndex();
+			User user = users.get(index);
+			user.setName(txtName.getText());
+			comboUsers.getItems().set(index, user.getName());
+			comboUsers.getSelectionModel().select(index);;
 		}
-		comboUsers.getItems().clear();
-		comboUsers.getItems().addAll(userNames);
-		comboUsers.getSelectionModel().selectFirst();
-//		if(comboUsers.getSelectionModel().getSelectedItem() != null) {}
 	}
+	
 	
 	@FXML
 	void eventSaveToFile() {

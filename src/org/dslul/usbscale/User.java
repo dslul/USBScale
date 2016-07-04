@@ -33,13 +33,13 @@ public class User {
 		this.height = (int)userdata[1];
 		
 		//get gender
-		if(userdata[4] == 1)
+		if(((userdata[4]&0xF0) >> 4) == 0)
 			this.gender = Gender.MALE;
 		else
 			this.gender = Gender.FEMALE;
 		
 		//get activity
-		this.height = (int)userdata[5];
+		this.height = (int)(userdata[4]&0x0F);
 		
 		//get birth date
 		byte[] birthb = new byte[2];

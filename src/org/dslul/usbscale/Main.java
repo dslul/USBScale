@@ -15,7 +15,7 @@ public class Main extends Application {
 			Scene scene = new Scene(root,800,500);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			stage.setTitle("Bilancia USB");
-			stage.setMinHeight(450);
+			stage.setMinHeight(350);
 			stage.setMinWidth(550);
 			stage.setScene(scene);
 			stage.show();

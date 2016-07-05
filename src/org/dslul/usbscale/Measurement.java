@@ -12,7 +12,8 @@ public class Measurement {
 	LocalDateTime datetime;
 
 	
-	public Measurement(double weight, double bodyfat, double water, double muscle, int year, int month, int day,
+	public Measurement(double weight, double bodyfat, double water, double muscle, 
+						int year, int month, int day,
 						int hour, int minute) {
 		this.weight = weight;
 		this.bodyfat = bodyfat;

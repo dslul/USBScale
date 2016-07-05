@@ -4,16 +4,21 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.dslul.usbscale.User.Gender;
 
 import eu.hansolo.medusa.Gauge;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -56,7 +61,7 @@ public class MainController {
 		txtName.setText(user.getName());
 		lblAge.setText(user.getAge());
 		lblHeight.setText(String.valueOf(user.getHeight()));
-		lblGender.setText(user.getGender()==User.Gender.MALE?"Maschile":"Femminile");
+		lblGender.setText(user.getGender()==Gender.MALE?"Maschile":"Femminile");
 		lblActivity.setText(String.valueOf(user.getActivity()));
 		
 		List<Measurement> measurements = user.getMeasurements();
@@ -92,26 +97,28 @@ public class MainController {
 	}
 	
 	
-	class DataThread implements Runnable {
+	class DownloadThread implements Runnable {
 		public void run() {
 			btnDownload.setDisable(true);
 			Runnable task = () -> { while(scale.getProgress()<100 && scale.isConnected()) 
-				progressbar.setProgress(scale.getProgress()); };
-			//byte[] data = scale.getDataFromFile("/home/daniele/Scrivania/dump.bin");
-			byte[] data = new byte[8192];
+									progressbar.setProgress(scale.getProgress()); 
+								  };
 			try {				
 				Thread t = new Thread(task);
 				t.start();
-				data = scale.getData();
+				DataDecoder formatter = new DataDecoder(scale.getData());		
+				DBManager db = new DBManager();
+				db.addUsers(formatter.getDecodedUsers());
+				db.close();
+				//add users to choicebox
+				Platform.runLater(() -> retrieveUsersFromDB());
 			} catch (Exception e) {
+				Platform.runLater(() -> {Alert alert = new Alert(AlertType.ERROR);
+											alert.setContentText(e.getMessage());
+											alert.show();
+										});
 				System.out.println(e.getMessage());
 			}
-			DataFormatter formatter = new DataFormatter(data);		
-			DBManager db = new DBManager();
-			db.addUsers(formatter.getUsers());
-			db.close();
-			//add users to choicebox
-			Platform.runLater(() -> retrieveUsersFromDB());;
 			
 			btnDownload.setDisable(false);
 		}
@@ -178,8 +185,7 @@ public class MainController {
 	
 	@FXML
 	void eventDownload() {
-		//byte[] data = scale.getDataFromFile("/home/daniele/Scrivania/dump.bin");
-		Thread t = new Thread(new DataThread());
+		Thread t = new Thread(new DownloadThread());
 		t.start();
 	}
 	
@@ -188,9 +194,15 @@ public class MainController {
 		if(comboUsers.getSelectionModel().getSelectedItem() != null) {
 			int index = comboUsers.getSelectionModel().getSelectedIndex();
 			User user = users.get(index);
-			user.setName(txtName.getText());
-			comboUsers.getItems().set(index, user.getName());
-			comboUsers.getSelectionModel().select(index);;
+			try {
+				user.setName(txtName.getText());
+				comboUsers.getItems().set(index, user.getName());
+				comboUsers.getSelectionModel().select(index);
+			} catch (SQLException e) {
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setContentText(e.getMessage());
+				alert.show();
+			}
 		}
 	}
 	
@@ -211,7 +223,9 @@ public class MainController {
 				}
 				fileWriter.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setContentText("Errore nella scrittura del file.");
+				alert.show();
 			}
         }
 	}

@@ -54,11 +54,12 @@ public class Scale {
         	System.out.println("Receiving data...");
         	
         	
-        	List<UsbEndpoint> points=iface.getUsbEndpoints();
+        	@SuppressWarnings("unchecked")
+			List<UsbEndpoint> points = iface.getUsbEndpoints();
             UsbPipe pipe = points.get(0).getUsbPipe();
 
             if(!pipe.isOpen()){
-                System.out.println("need open pipe");
+                System.out.println("need to open pipe");
                 pipe.open();
             }
 
@@ -77,6 +78,8 @@ public class Scale {
     		pipe.close();
     		iface.release();
     		data = outputStream.toByteArray();
+    		progress = 0;
+        	connected = false;
         } else {
         	connected = false;
         	throw new Exception("Bilancia non collegata");
@@ -114,6 +117,7 @@ public class Scale {
 		return connected;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public UsbDevice findDevice(UsbHub hub, short vendorId, short productId)
 	{
 	    for (UsbDevice device : (List<UsbDevice>) hub.getAttachedUsbDevices())

@@ -98,8 +98,16 @@ public class DBManager {
 					System.out.println("Added user: " + user);
 					String sql = "INSERT INTO `UserData`(`id`,`name`,`birthDate`,"+
 							"`height`,`gender`,`activity`,`lastDownload`) VALUES "+
-							"("+user.getId()+","+user.getName()+","+user.getBirthDate()+","+
-							user.getHeight()+","+user.getGender().name()+","+user.getActivity()+",NULL);";
+							"("+user.getId()+",'"+user.getName()+"','"+user.getBirthDate()+"',"+
+							user.getHeight()+",'"+user.getGender().name()+"',"+user.getActivity()+",NULL);";
+					sta.executeUpdate(sql);
+				} else {
+					System.out.println("Updated user: " + user.getName());
+					String sql = "UPDATE `UserData` SET "
+							+ "`birthDate`='"+user.getBirthDate()+"', "
+									+ "`activity`="+user.getActivity()+", "
+							+ "`height`="+user.getHeight()+", `gender`='"+user.getGender().name()+"' "
+							+ "WHERE `id`="+user.getId()+";";
 					sta.executeUpdate(sql);
 				}
 				//add measurements

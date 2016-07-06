@@ -111,7 +111,7 @@ public class MainController {
 				db.addUsers(formatter.getDecodedUsers());
 				db.close();
 				//add users to choicebox
-				Platform.runLater(() -> retrieveUsersFromDB());
+				Platform.runLater(MainController.this::retrieveUsersFromDB);
 			} catch (Exception e) {
 				Platform.runLater(() -> {Alert alert = new Alert(AlertType.ERROR);
 											alert.setContentText(e.getMessage());
@@ -119,7 +119,11 @@ public class MainController {
 										});
 				System.out.println(e.getMessage());
 			}
-			
+
+
+			Platform.runLater(() -> {Alert alert = new Alert(AlertType.INFORMATION);
+										alert.setContentText("Dati scaricati correttamente.");
+										alert.show();});
 			btnDownload.setDisable(false);
 		}
 	}
